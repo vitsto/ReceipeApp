@@ -1,4 +1,4 @@
-package my.stolyarov.springcourse.recipeapp.controllers;
+package my.stolyarov.springcourse.recipeapp.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
