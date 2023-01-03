@@ -105,13 +105,6 @@ public class IngredientController {
     @Parameters(
             value = {
                     @Parameter(name = "id", example = "0")
-                    //не сообразил как сделать example для newIngredient
-                    //можно прям строкой описать, что-то вроде {
-                    //        "title": "консервированная фасоль",
-                    //        "count": 400,
-                    //        "measureUnit": "г."
-                    //      }
-                    //или такие параметры не описываются, потому что в реквест боди уже дан пример?
             }
     )
     @ApiResponses(value = {

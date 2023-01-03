@@ -1,22 +1,44 @@
 package my.stolyarov.springcourse.recipeapp.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import my.stolyarov.springcourse.recipeapp.model.Ingredient;
+import my.stolyarov.springcourse.recipeapp.service.FilesService;
 import my.stolyarov.springcourse.recipeapp.service.IngredientService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Service
 public class IngredientServiceImpl implements IngredientService {
+
+    private final FilesService filesService;
+    @Value("${name.of.data.file.ingredient}")
+    private String fileName;
     private static long id = 0;
-    private final Map<Long, Ingredient> ingredients = new HashMap<>();
+    private Map<Long, Ingredient> ingredients = new HashMap<>();
+
+    public IngredientServiceImpl(FilesService filesService) {
+        this.filesService = filesService;
+    }
+
+    @PostConstruct
+    private void init() {
+        readFromFile();
+        id = ingredients.size();
+    }
 
     @Override
     public Ingredient addIngredient(Ingredient ingredient) {
         if (ingredients.containsValue(ingredient)) {
             throw new RuntimeException("This ingredient has already been created.");
         }
-        return ingredients.put(id++, ingredient);
+        Ingredient addedIngredient = ingredients.put(id++, ingredient);
+        saveToFile();
+        return  addedIngredient;
     }
 
     @Override
@@ -37,6 +59,7 @@ public class IngredientServiceImpl implements IngredientService {
     public Ingredient editIngredient(long id, Ingredient ingredient) {
         if (ingredients.containsKey(id)) {
             ingredients.put(id, ingredient);
+            saveToFile();
             return ingredient;
         }
         return null;
@@ -46,8 +69,28 @@ public class IngredientServiceImpl implements IngredientService {
     public boolean deleteIngredient(long id) {
         if (ingredients.containsKey(id)) {
             ingredients.remove(id);
+            saveToFile();
             return true;
         }
         return false;
+    }
+
+    private void saveToFile() {
+        try {
+            String json = new ObjectMapper().writeValueAsString(ingredients);
+            filesService.saveToFile(fileName, json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void readFromFile() {
+        String json = filesService.readFromFile(fileName);
+        try {
+            ingredients = new ObjectMapper().readValue(json, new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
