@@ -15,4 +15,6 @@ public interface IngredientService {
     Ingredient editIngredient(long id, Ingredient ingredient);
 
     boolean deleteIngredient(long id);
+
+    String getFileName();
 }
