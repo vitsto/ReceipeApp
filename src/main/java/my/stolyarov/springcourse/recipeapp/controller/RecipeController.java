@@ -14,9 +14,16 @@ import my.stolyarov.springcourse.recipeapp.model.Recipe;
 import my.stolyarov.springcourse.recipeapp.service.IngredientService;
 import my.stolyarov.springcourse.recipeapp.service.RecipeService;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 @RestController
@@ -168,5 +175,25 @@ public class RecipeController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<Object> downloadAllRecipes() {
+        try {
+            Path path = recipeService.createGeneralRecipeFile();
+            if (Files.size(path) == 0) {
+                return ResponseEntity.noContent().build();
+            }
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(path.toFile()));
+            return ResponseEntity.ok()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .contentLength(Files.size(path))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"All recipes.txt\"")
+                    .body(resource);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(e.toString());
+        }
+
     }
 }
