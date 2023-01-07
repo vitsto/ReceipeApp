@@ -1,9 +1,11 @@
 package my.stolyarov.springcourse.recipeapp.service.impl;
 
+import my.stolyarov.springcourse.recipeapp.exception.ReadFromFileException;
 import my.stolyarov.springcourse.recipeapp.service.FilesService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,11 +34,12 @@ public class FilesServiceImpl implements FilesService {
         try {
             return Files.readString(Path.of(pathToFile, fileName));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ReadFromFileException(e);
         }
     }
 
-    private boolean cleanDataFile(String fileName) {
+    @Override
+    public boolean cleanDataFile(String fileName) {
         try {
             Path path = Path.of(pathToFile, fileName);
             Files.deleteIfExists(path);
@@ -46,5 +49,10 @@ public class FilesServiceImpl implements FilesService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public File getDataFile(String filename) {
+        return new File(pathToFile + "/" + filename);
     }
 }

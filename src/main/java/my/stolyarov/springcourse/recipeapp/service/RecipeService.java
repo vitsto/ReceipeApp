@@ -17,4 +17,6 @@ public interface RecipeService {
     boolean deleteRecipe(long id);
 
     Collection<Recipe> findByIngredient(Ingredient ingredient);
+
+    String getFileName();
 }

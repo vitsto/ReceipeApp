@@ -3,6 +3,10 @@ package my.stolyarov.springcourse.recipeapp.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import my.stolyarov.springcourse.recipeapp.exception.IngredientCreatingException;
+import my.stolyarov.springcourse.recipeapp.exception.IngredientNotFoundException;
+import my.stolyarov.springcourse.recipeapp.exception.ReadFromFileException;
+import my.stolyarov.springcourse.recipeapp.exception.SaveToFileException;
 import my.stolyarov.springcourse.recipeapp.model.Ingredient;
 import my.stolyarov.springcourse.recipeapp.service.FilesService;
 import my.stolyarov.springcourse.recipeapp.service.IngredientService;
@@ -34,7 +38,7 @@ public class IngredientServiceImpl implements IngredientService {
     @Override
     public Ingredient addIngredient(Ingredient ingredient) {
         if (ingredients.containsValue(ingredient)) {
-            throw new RuntimeException("This ingredient has already been created.");
+            throw new IngredientCreatingException("This ingredient has already been created.");
         }
         Ingredient addedIngredient = ingredients.put(id++, ingredient);
         saveToFile();
@@ -50,7 +54,7 @@ public class IngredientServiceImpl implements IngredientService {
     public Ingredient getIngredient(long id) {
         Ingredient returnedIngredient = ingredients.get(id);
         if (returnedIngredient == null) {
-            throw new RuntimeException("The ingredient with id: " + id + " not found");
+            throw new IngredientNotFoundException("The ingredient with id: " + id + " not found");
         }
         return returnedIngredient;
     }
@@ -80,7 +84,7 @@ public class IngredientServiceImpl implements IngredientService {
             String json = new ObjectMapper().writeValueAsString(ingredients);
             filesService.saveToFile(fileName, json);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new SaveToFileException(e);
         }
     }
 
@@ -90,7 +94,12 @@ public class IngredientServiceImpl implements IngredientService {
             ingredients = new ObjectMapper().readValue(json, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new ReadFromFileException(e);
         }
+    }
+
+    @Override
+    public String getFileName() {
+        return fileName;
     }
 }

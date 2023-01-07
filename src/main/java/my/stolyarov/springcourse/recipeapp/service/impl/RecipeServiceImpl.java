@@ -107,4 +107,9 @@ public class RecipeServiceImpl implements RecipeService {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public String getFileName() {
+        return fileName;
+    }
 }
