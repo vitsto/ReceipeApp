@@ -11,6 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -20,7 +25,7 @@ import java.util.Map;
 public class RecipeServiceImpl implements RecipeService {
     private final FilesService filesService;
     private static long id = 0;
-    private Map<Long,Recipe> recipes = new HashMap<>();
+    private Map<Long, Recipe> recipes = new HashMap<>();
     @Value("${name.of.data.file.recipe}")
     private String fileName;
 
@@ -106,6 +111,29 @@ public class RecipeServiceImpl implements RecipeService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Path createGeneralRecipeFile() throws IOException {
+        Path path = filesService.createTempFile("generalReport");
+        for (Recipe recipe : recipes.values()) {
+            try (Writer writer = Files.newBufferedWriter(path, StandardOpenOption.APPEND)) {
+                writer.append(String.valueOf(recipe.getTitle())).append("\n").append("Время приготовления: ")
+                        .append(String.valueOf(recipe.getCookingTime())).append(" минут").append("\n").append("Ингредиенты:")
+                        .append("\n");
+
+                for (Ingredient ingredient : recipe.getIngredients()) {
+                    writer.append("\t").append(ingredient.getTitle()).append(" - ").append(String.valueOf(ingredient.getCount()))
+                            .append(" ").append(ingredient.getMeasureUnit()).append("\n");
+                }
+                writer.append("Инструкция приготовления: ");
+                for (String step : recipe.getCookingSteps()) {
+                    writer.append(step).append("\n");
+                }
+                writer.append("\n");
+            }
+        }
+        return path;
     }
 
     @Override
